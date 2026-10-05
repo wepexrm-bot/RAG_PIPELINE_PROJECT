@@ -24,7 +24,7 @@ def _probe_gemini():
         logfire.info("Gemini embeddings ready (gemini-embedding-2-preview, 3072-dim).")
         return model
     except Exception as e:
-        logfire.warning(f"Gemini probe failed: {e}. Will use sentence-transformers fallback.")
+        logfire.warning("Gemini probe failed: {}. Will use sentence-transformers fallback.", e)
         return None
 
 
@@ -76,7 +76,7 @@ def _embed_batch(batch: list[str]) -> list[list[float]]:
                     )
                     time.sleep(wait)
                 else:
-                    logfire.error(f"Gemini embedding failed: {e}")
+                    logfire.error("Gemini embedding failed: {}", e)
                     raise
         raise RuntimeError("Gemini rate limit persisted after 4 attempts.")
     else:

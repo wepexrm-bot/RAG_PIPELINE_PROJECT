@@ -36,7 +36,7 @@ def parse_pdf(file_path: str) -> str:
                             if fallback_text.strip():
                                 text_parts.append(fallback_text)
                 except Exception as plumber_err:
-                    logfire.warning(f"pdfplumber fallback failed: {plumber_err}")
+                    logfire.warning("pdfplumber fallback failed: {}", plumber_err)
 
             full_text = "\n".join(text_parts)
 
@@ -48,5 +48,5 @@ def parse_pdf(file_path: str) -> str:
             return full_text
 
         except Exception as e:
-            logfire.error(f"PDF Parse Failed for {file_path}: {e}")
+            logfire.error("PDF Parse Failed for {}: {}", file_path, e)
             raise

@@ -20,6 +20,8 @@ class Settings:
 
     # --- LLM GATEWAY (PORTKEY) ---
     PORTKEY_API_KEY = os.getenv("PORTKEY_API_KEY")
+    PORTKEY_PRIMARY_CONFIG_ID = os.getenv("PORTKEY_PRIMARY_CONFIG_ID")
+    PORTKEY_PRIMARY_SLUG = os.getenv("PORTKEY_PRIMARY_SLUG")
     GROQ_SLUG =  "rag"     # primary: @rag/llama-3.3-70b-versatile
     GROQ_SLUG_2 = "brag"  # fallback: @brag/llama-3.1-8b-instant
 
@@ -30,8 +32,11 @@ class Settings:
     LANGSMITH_PROJECT = os.getenv("LANGSMITH_PROJECT", "rag_scale_test")
     LANGSMITH_ENDPOINT = os.getenv("LANGSMITH_ENDPOINT", "https://api.smith.langchain.com")
 
-# Apply LangChain environment variables for automatic tracing
-os.environ["LANGCHAIN_TRACING_V2"] = os.getenv("LANGSMITH_TRACING", "true")
+# Apply LangChain environment variables for automatic tracing.
+# Tracing is only enabled when a real API key is present — otherwise LangSmith
+# would spam 401 Unauthorized errors on every request.
+_has_langsmith_key = bool(os.getenv("LANGSMITH_API_KEY", "").strip())
+os.environ["LANGCHAIN_TRACING_V2"] = "true" if _has_langsmith_key else "false"
 os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGSMITH_API_KEY", "")
 os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGSMITH_PROJECT", "rag_scale_test")
 os.environ["LANGCHAIN_ENDPOINT"] = os.getenv("LANGSMITH_ENDPOINT", "https://api.smith.langchain.com")

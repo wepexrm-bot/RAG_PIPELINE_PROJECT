@@ -102,16 +102,7 @@ if prompt := st.chat_input("Ask about your documentation..."):
                         st.write(f"⚙️ {step}")
                     
                     status.update(label="✅ Answer Synthesized", state="complete", expanded=False)
-                    
-                    # --- SHOW SOURCES ---
-                    # Streamlit forbids nested expanders, so chunks are listed
-                    # inside a single expander rather than one expander each.
-                    sources = data.get("sources", [])
-                    if sources:
-                        with st.expander(f"📄 Retrieved Context ({len(sources)} chunks)"):
-                            for i, source in enumerate(sources):
-                                st.caption(f"Chunk {i + 1}")
-                                st.info(source)
+
                 except Exception as e:
                     logfire.error(f"❌ UI-Backend Connection Failed: {e}")
                     status.update(label="❌ Connection Failed", state="error")
@@ -133,5 +124,18 @@ if prompt := st.chat_input("Ask about your documentation..."):
                 time.sleep(0.005)
             
             answer_placeholder.markdown(full_answer)
+
+            # Sources — outside status so they're visible after it collapses.
+            # Streamlit also forbids an expander inside st.status (both register
+            # as Block.expandable), so this must not move back into the status.
+            sources = data.get("sources", [])
+            if sources:
+                with st.expander(f"📄 Retrieved Context ({len(sources)} chunks)"):
+                    for i, source in enumerate(sources):
+                        st.caption(f"Chunk {i + 1}")
+                        st.info(source)
+            else:
+                st.caption("ℹ️ No context retrieved — conversational response.")
+
             st.session_state.messages.append({"role": "assistant", "content": full_answer})
             logfire.info("✅ Chat cycle completed successfully.")

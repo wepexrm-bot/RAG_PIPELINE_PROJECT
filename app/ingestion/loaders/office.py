@@ -20,5 +20,5 @@ def parse_office(file_path: str):
 
             return full_text
         except Exception as e:
-            logfire.error("❌ Office Parse Failed: {}", e)
+            logfire.error("❌ Office Parse Failed: {e}", e=e)
             raise e

@@ -82,6 +82,7 @@ if prompt := st.chat_input("Ask about your documentation..."):
         # Assistant Response
         with st.chat_message("assistant", avatar=AI_AVATAR):
             with st.status("🔍 Agent is thinking...", expanded=True) as status:
+                data = None
                 try:
                     # DISTRIBUTED TRACE: Calling Backend
                     with logfire.span("📡 Calling RAG Backend"):
@@ -102,19 +103,23 @@ if prompt := st.chat_input("Ask about your documentation..."):
                     
                     status.update(label="✅ Answer Synthesized", state="complete", expanded=False)
                     
-                    # --- SHOW SOURCES (NESTED EXPANDABLES) ---
+                    # --- SHOW SOURCES ---
+                    # Streamlit forbids nested expanders, so chunks are listed
+                    # inside a single expander rather than one expander each.
                     sources = data.get("sources", [])
                     if sources:
-                        with st.expander("📄 View Retrieved Context (Sources)"):
+                        with st.expander(f"📄 Retrieved Context ({len(sources)} chunks)"):
                             for i, source in enumerate(sources):
-                                # Create a preview title for each chunk
-                                preview = source[:100].replace("\n", " ") + "..."
-                                with st.expander(f"Chunk {i+1}: {preview}"):
-                                    st.info(source)
+                                st.caption(f"Chunk {i + 1}")
+                                st.info(source)
                 except Exception as e:
                     logfire.error(f"❌ UI-Backend Connection Failed: {e}")
                     status.update(label="❌ Connection Failed", state="error")
-                    st.error("Backend Offline.")
+                    st.error("Backend request failed.")
+
+                if data is None:
+                    # Raised outside the except block so StopException is not
+                    # chained onto the original error in logs.
                     st.stop()
 
             # Final Answer Streaming
